@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CPU Scheduling Simulator — Priority vs SRTF</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     HEADER
+════════════════════════════════════════════════ -->
+<div class="header">
+  <div>
+    <div class="header-title">⚡ CPU Scheduling Simulator</div>
+    <div class="header-sub">OS Project C1 &nbsp;|&nbsp; Priority vs SRTF</div>
+  </div>
+  <div class="header-badge">
+    <span class="badge badge-cyan">Priority</span>
+    <span class="badge badge-amber">SRTF</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     MAIN CONTAINER
+════════════════════════════════════════════════ -->
+<div class="container">
+
+  <!-- PROGRESS STEPS -->
+  <div class="steps">
+    <div class="step active" id="step1"><div class="step-dot"></div> 1. Enter Processes</div>
+    <div class="step" id="step2"><div class="step-dot"></div> 2. Run Simulation</div>
+    <div class="step" id="step3"><div class="step-dot"></div> 3. View Results</div>
+    <div class="step" id="step4"><div class="step-dot"></div> 4. Compare</div>
+    <div class="step" id="step5"><div class="step-dot"></div> 5. Conclusion</div>
+  </div>
+
+  <!-- ─────────────────────────────────────────────
+       SECTION 1 — INPUT PANEL
+  ────────────────────────────────────────────── -->
+  <div class="section" id="secInput">
+    <div class="section-header">
+      <div class="section-num">1</div>
+      <div class="section-title">Input Panel</div>
+      <!-- Quick-load scenario buttons -->
+      <div style="margin-left:auto; display:flex; gap:8px; align-items:center;">
+        <span style="font-size:11px; color:var(--text3);">Quick load:</span>
+        <button class="btn btn-outline" onclick="loadScenario('A')">Scenario A</button>
+        <button class="btn btn-outline" onclick="loadScenario('B')">Scenario B</button>
+        <button class="btn btn-outline" onclick="loadScenario('C')">Scenario C</button>
+      </div>
+    </div>
+
+    <div class="section-body">
+      <!-- Convention note -->
+      <div class="callout">
+        <span>Convention:</span> Lower priority number = Higher priority
+        &nbsp;|&nbsp; Tie-breaking: Arrival Time → then PID
+        &nbsp;|&nbsp; Valid priority range: 1–99
+      </div>
+
+      <!-- ADD PROCESS FORM -->
+      <div class="form-row" id="inputForm">
+        <div class="form-group">
+          <label>Process ID</label>
+          <input type="text" id="inPid" placeholder="P1" maxlength="6">
+        </div>
+        <div class="form-group">
+          <label>Arrival Time</label>
+          <input type="text" id="inAt" placeholder="0">
+        </div>
+        <div class="form-group">
+          <label>Burst Time</label>
+          <input type="text" id="inBt" placeholder="5">
+        </div>
+        <div class="form-group">
+          <label>Priority (1 = Highest)</label>
+          <input type="text" id="inPri" placeholder="1">
+        </div>
+        <div class="form-group">
+          <label>&nbsp;</label>
+          <button class="btn btn-cyan" onclick="addProcess()" style="width:100%">+ Add</button>
+        </div>
+        <div></div>
+      </div>
+
+      <!-- Validation error for add form -->
+      <div class="error-msg" id="errorMsg"></div>
+
+      <div class="divider"></div>
+
+      <!-- Table controls -->
+      <div class="actions-row" style="margin-bottom:14px;">
+        <button class="btn btn-red" onclick="clearAll()">Clear All</button>
+        <span style="font-size:11px; color:var(--text3)" id="procCount">0 processes</span>
+      </div>
+
+      <!-- PROCESS TABLE -->
+      <table class="proc-table" id="procTable">
+        <thead>
+          <tr>
+            <th>PID</th>
+            <th>Arrival Time</th>
+            <th>Burst Time</th>
+            <th>Priority</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="procTableBody">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <div class="icon">◻</div>
+                No processes yet. Add at least 2 to simulate.
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Run button lives in status bar -->
+    <div class="status-bar">
+      <div class="status-dot gray" id="inputStatusDot"></div>
+      <span id="inputStatus">Waiting for input</span>
+      <div style="margin-left:auto">
+        <button class="btn btn-green btn-lg" onclick="runSimulation()" id="runBtn">
+          ▶ Run Simulation
+        </button>
+      </div>
+    </div>
+  </div><!-- /secInput -->
+
+
+  <!-- ─────────────────────────────────────────────
+       SECTIONS 2–5 — RESULTS (hidden until run)
+  ────────────────────────────────────────────── -->
+  <div id="resultsSection" style="display:none">
+
+    <!-- SECTION 2 — GANTT CHARTS -->
+    <div class="section fade-in">
+      <div class="section-header">
+        <div class="section-num">2</div>
+        <div class="section-title">Gantt Charts</div>
+      </div>
+      <div class="section-body">
+        <div class="split">
+
+          <!-- Priority Gantt -->
+          <div class="algo-section">
+            <div class="algo-header">
+              <span class="algo-label algo-priority">◆ Priority Scheduling</span>
+              <span style="font-size:10px; color:var(--text3)">preemptive</span>
+            </div>
+            <div style="padding:16px">
+              <div class="gantt-wrapper">
+                <div class="gantt-container" id="ganttPriority"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SRTF Gantt -->
+          <div class="algo-section">
+            <div class="algo-header">
+              <span class="algo-label algo-srtf">◆ SRTF</span>
+              <span style="font-size:10px; color:var(--text3)">preemptive</span>
+            </div>
+            <div style="padding:16px">
+              <div class="gantt-wrapper">
+                <div class="gantt-container" id="ganttSRTF"></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /gantt section -->
+
+    <!-- SECTION 3 — RESULTS TABLES -->
+    <div class="section fade-in">
+      <div class="section-header">
+        <div class="section-num">3</div>
+        <div class="section-title">Results Tables</div>
+      </div>
+      <div class="section-body">
+        <div class="split">
+
+          <!-- Priority Results -->
+          <div class="algo-section">
+            <div class="algo-header">
+              <span class="algo-label algo-priority">Priority Scheduling</span>
+            </div>
+            <div style="padding:14px">
+              <div class="grid4" id="metricsPriority" style="margin-bottom:14px"></div>
+              <table class="results-table" id="tablePriority"></table>
+            </div>
+          </div>
+
+          <!-- SRTF Results -->
+          <div class="algo-section">
+            <div class="algo-header">
+              <span class="algo-label algo-srtf">SRTF</span>
+            </div>
+            <div style="padding:14px">
+              <div class="grid4" id="metricsSRTF" style="margin-bottom:14px"></div>
+              <table class="results-table" id="tableSRTF"></table>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div><!-- /results section -->
+
+    <!-- SECTION 4 — COMPARISON SUMMARY -->
+    <div class="section fade-in">
+      <div class="section-header">
+        <div class="section-num">4</div>
+        <div class="section-title">Comparison Summary</div>
+      </div>
+      <div class="section-body">
+        <div id="comparisonArea"></div>
+      </div>
+    </div>
+
+    <!-- SECTION 5 — CONCLUSION -->
+    <div class="section fade-in">
+      <div class="section-header">
+        <div class="section-num">5</div>
+        <div class="section-title">Final Conclusion &amp; Analysis</div>
+      </div>
+      <div class="section-body" id="conclusionArea"></div>
+    </div>
+
+  </div><!-- /resultsSection -->
+
+
+  <!-- ─────────────────────────────────────────────
+       VALIDATION DEMO — SCENARIO D
+  ────────────────────────────────────────────── -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-num"
+           style="background:var(--red-dim);border-color:rgba(255,91,91,0.4);color:var(--red)">
+        ✕
+      </div>
+      <div class="section-title">Scenario D — Validation Demo</div>
+    </div>
+    <div class="section-body">
+      <div style="margin-bottom:12px; font-size:12px; color:var(--text2)">
+        Click any button below to trigger a validation error:
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+        <button class="btn btn-outline" onclick="demoError('neg_at')">AT = -1 (negative)</button>
+        <button class="btn btn-outline" onclick="demoError('zero_bt')">BT = 0 (zero)</button>
+        <button class="btn btn-outline" onclick="demoError('dup_pid')">Duplicate PID</button>
+        <button class="btn btn-outline" onclick="demoError('letters')">Letters in numeric</button>
+        <button class="btn btn-outline" onclick="demoError('missing')">Missing fields</button>
+        <button class="btn btn-outline" onclick="demoError('bad_pri')">Priority out of range</button>
+        <button class="btn btn-outline" onclick="demoError('few_procs')">Less than 2 processes</button>
+      </div>
+      <div id="demoErrorMsg" class="error-msg"></div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<!-- ═══════════════════════════════════════════════
+     SCRIPTS — logic first, then UI/DOM
+════════════════════════════════════════════════ -->
+<script src="js/logic.js"></script>
+<script src="js/script.js"></script>
+
+</body>
+</html>
