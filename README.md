@@ -135,7 +135,7 @@ All errors are displayed inline with a shake animation. The simulation will not 
 
 ---
 
-## 🚀 Running the Project
+##  Running the Project
 
 No build step. No dependencies. No internet required after the page loads.
 
