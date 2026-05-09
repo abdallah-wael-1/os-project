@@ -1,6 +1,19 @@
 #  CPU Scheduling Simulator
 ### Priority Scheduling vs SRTF &nbsp;|&nbsp; OS Project C1
 
+---
+
+## Team Members
+
+| 1 | Abdullah Wael | [20240589] |
+| 2 | Marwan Ahmed | [20240918] |
+| 3 | Philopater Elia  | [20240697] |
+| 4 | Dina Sayed | [20240341] |
+| 5 | Shahd Khaled | [20240485] |
+| 6 | Esraa Nasser | [20240128] |
+| 7 | Aya Aboelhamd | [ID] |
+
+---
 
 ## Overview
 
@@ -10,7 +23,16 @@ No backend. No frameworks. Pure HTML + CSS + Vanilla JavaScript.
 
 ---
 
-##  Features
+## Requirements
+
+- Any modern web browser (Chrome 90+, Firefox 88+, Edge 90+, Safari 14+)
+- No installations required
+- No internet connection required after cloning
+- No build tools, no package managers, no dependencies
+
+---
+
+## Features
 
 - **Dual-algorithm simulation** — Priority and SRTF run on the same input, results rendered in parallel
 - **Visual Gantt charts** — Color-coded, scrollable, per-algorithm execution timeline
@@ -24,7 +46,7 @@ No backend. No frameworks. Pure HTML + CSS + Vanilla JavaScript.
 
 ---
 
-##  Project Structure
+## Project Structure
 
 ```
 project/
@@ -36,37 +58,52 @@ project/
     └── script.js       ← DOM rendering, validation, event handling
 ```
 
-The two JS files are deliberately separated:
-
-- **`logic.js`** is pure functions only — no `document`, no DOM. Can be pasted into a browser console and tested in isolation.
-- **`script.js`** is the UI layer only — it calls `logic.js` functions, never re-implements algorithm logic.
+- **`logic.js`** — Pure functions only, no DOM. Can be tested in isolation via browser console.
+- **`script.js`** — UI layer only, calls `logic.js` functions, never re-implements algorithm logic.
 
 ---
 
-##  Algorithms
+## Build / Run Steps
 
-###  Priority Scheduling (Preemptive)
+No build step required.
+
+```bash
+git clone https://github.com/abdallah-wael-1/os-project.git
+cd os-project
+```
+
+Then open `index.html` directly in any modern browser.
+
+> If your browser blocks local file imports, use a local server:
+> ```bash
+> npx serve .
+> # Then open http://localhost:3000
+> ```
+
+---
+
+## Algorithms
+
+### Priority Scheduling (Preemptive)
 
 At every time unit, the CPU is given to the ready process with the **lowest priority number** (lower number = higher urgency). If a higher-priority process arrives while another is running, it immediately preempts it.
 
-**Tie-breaking rule:** Earlier arrival time → then lexicographically smaller PID.
+- **Tie-breaking rule:** Earlier arrival time → then lexicographically smaller PID.
+- **Known issue:** Can cause **starvation** — a low-priority process may never run if high-priority processes keep arriving.
 
-**Known issue:** Can cause **starvation** — a low-priority process may never run if high-priority processes keep arriving.
-
-### ◆ SRTF — Shortest Remaining Time First (Preemptive)
+### SRTF — Shortest Remaining Time First (Preemptive)
 
 At every time unit, the CPU goes to the ready process with the **shortest remaining burst time**. If a new arrival has less remaining time than the running process, it preempts immediately.
 
-**Tie-breaking rule:** Shorter remaining time → earlier arrival → smaller PID.
-
-**Proven property:** SRTF is theoretically optimal for minimizing average waiting time in a preemptive environment.
+- **Tie-breaking rule:** Shorter remaining time → earlier arrival → smaller PID.
+- **Proven property:** SRTF is theoretically optimal for minimizing average waiting time in a preemptive environment.
 
 ---
 
-##  Metrics
+## Metrics
 
 | Metric | Formula |
-|---|---|
+|--------|---------|
 | Turnaround Time (TAT) | `Completion Time − Arrival Time` |
 | Waiting Time (WT) | `TAT − Burst Time` |
 | Response Time (RT) | `First CPU Time − Arrival Time` |
@@ -75,7 +112,7 @@ Averages are computed as the sum of each metric across all processes divided by 
 
 ---
 
-##  Test Scenarios
+## Test Scenarios
 
 ### Scenario A — Basic Mixed Workload
 
@@ -88,7 +125,7 @@ Averages are computed as the sum of each metric across all processes divided by 
 
 ### Scenario B — Priority vs Burst Conflict
 
-A high-priority process with a long burst competes against low-priority short processes. The two algorithms behave very differently here.
+A high-priority process with a long burst competes against low-priority short processes.
 
 | PID | Arrival | Burst | Priority |
 |-----|---------|-------|----------|
@@ -110,7 +147,7 @@ A high-priority process with a long burst competes against low-priority short pr
 
 ### Scenario D — Validation Demo
 
-Demonstrates all error cases. Click the buttons in the Validation Demo section of the UI to trigger:
+Demonstrates all error cases via interactive buttons in the UI:
 
 - Negative arrival time
 - Burst time = 0
@@ -122,10 +159,10 @@ Demonstrates all error cases. Click the buttons in the Validation Demo section o
 
 ---
 
-##  Validation Rules
+## Validation Rules
 
 | Field | Rule |
-|---|---|
+|-------|------|
 | Process ID | Unique. Letters, numbers, hyphens, underscores only. |
 | Arrival Time | Number ≥ 0 |
 | Burst Time | Number > 0 |
@@ -135,40 +172,21 @@ All errors are displayed inline with a shake animation. The simulation will not 
 
 ---
 
-##  Running the Project
-
-No build step. No dependencies. No internet required after the page loads.
-
-```bash
-git clone https://github.com/your-username/os-scheduler-c1.git
-cd os-scheduler-c1
-```
-
-Then open `index.html` in any modern browser.
-
-> Or use a local server if your browser blocks local file imports:
-> ```bash
-> npx serve .
-> # open http://localhost:3000
-> ```
-
----
-
-##  Grading Checklist
+## Grading Checklist
 
 | Criterion | Status |
-|---|---|
+|-----------|--------|
 | Input panel with add/remove/clear 
 | Process table before simulation 
-| Gantt chart — Priority (separate)
+| Gantt chart — Priority (separate) 
 | Gantt chart — SRTF (separate) 
 | Results table — Priority (WT, TAT, RT + averages) 
-| Results table — SRTF (WT, TAT, RT + averages)
-| Comparison summary (same workload, both algorithms)
-| Auto-generated conclusion and analysis
+| Results table — SRTF (WT, TAT, RT + averages) 
+| Comparison summary (same workload, both algorithms) 
+| Auto-generated conclusion and analysis 
 | Input validation with clear error messages 
-| Scenarios A, B, C quick-load 
+| Scenarios A, B, C quick-load
 | Scenario D validation demo 
-| Convention documented (lower number = higher priority) 
-| Tie-breaking rule documented and applied 
-| Starvation risk discussed in conclusion 
+| Convention documented (lower number = higher priority) | ✅ |
+| Tie-breaking rule documented and applied | ✅ |
+| Starvation risk discussed in conclusion | ✅ |
