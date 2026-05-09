@@ -70,17 +70,20 @@ const SCENARIOS = {
     { pid: 'P3', at: 2, bt: 9, pri: 4 },
     { pid: 'P4', at: 3, bt: 5, pri: 2 },
   ],
-  /* Scenario B: conflict — high-priority long process vs low-priority short processes */
+  /* Scenario B: conflict — high-priority long process vs low-priority short processes
+     Priority: P1 runs almost uninterrupted (priority label wins)
+     SRTF:     P2 and P3 preempt P1 immediately (shorter burst wins) */
   B: [
-    { pid: 'P1', at: 0, bt: 2,  pri: 5 },  /* low priority, short  */
-    { pid: 'P2', at: 0, bt: 10, pri: 1 },  /* high priority, long  */
+    { pid: 'P1', at: 0, bt: 15, pri: 1 },  /* highest priority, long burst  */
+    { pid: 'P2', at: 1, bt: 2,  pri: 5 },  /* lowest priority,  short burst */
+    { pid: 'P3', at: 2, bt: 3,  pri: 5 },  /* lowest priority,  short burst */
   ],
-  /* Scenario C: starvation risk — P4 has very low priority */
+  /* Scenario C: starvation risk — P4 has very low priority and long burst */
   C: [
-    { pid: 'P1', at: 0, bt: 1,  pri: 1 },
-    { pid: 'P2', at: 1, bt: 1,  pri: 1 },
-    { pid: 'P3', at: 2, bt: 1,  pri: 1 },
-    { pid: 'P4', at: 0, bt: 20, pri: 5 },  /* starvation candidate */
+    { pid: 'P1', at: 0, bt: 10, pri: 1 },
+    { pid: 'P2', at: 0, bt: 5,  pri: 2 },
+    { pid: 'P3', at: 0, bt: 3,  pri: 3 },
+    { pid: 'P4', at: 0, bt: 8,  pri: 5 },  /* starvation candidate */
   ],
 };
 
@@ -340,7 +343,6 @@ function renderGantt(gantt, containerId) {
     let barStyle = `width:${width}px`;
     if (!isIdle) {
       const hexColor = COLOR_HEX[colorMap[seg.pid] % COLOR_HEX.length];
-      /* Semi-transparent fill + brighter text */
       barStyle += `; background:${hexColor}33; color:${hexColor}; border: 1px solid ${hexColor}66`;
     }
 
@@ -435,7 +437,6 @@ function renderResultsTable(metrics, tableId) {
  * @param {string} theme        - 'cyan' (Priority) or 'amber' (SRTF)
  */
 function renderMetricCards(avgs, containerId, theme) {
-  /* Pick two accent colors based on which algorithm we're showing */
   const c1 = theme === 'cyan' ? 'cyan'   : 'amber';
   const c2 = theme === 'cyan' ? 'amber'  : 'purple';
   const c3 = theme === 'cyan' ? 'green'  : 'cyan';
@@ -552,7 +553,6 @@ function renderComparison(pAvgs, sAvgs) {
  * @param {{ avgWT, avgTAT, avgRT }} sAvgs
  */
 function renderConclusion(pAvgs, sAvgs) {
-  /* Determine winner labels for each metric */
   function winner(pVal, sVal) {
     if (pVal < sVal) return 'Priority Scheduling';
     if (pVal > sVal) return 'SRTF';
@@ -563,8 +563,8 @@ function renderConclusion(pAvgs, sAvgs) {
   const tatWinner = winner(pAvgs.avgTAT, sAvgs.avgTAT);
   const rtWinner  = winner(pAvgs.avgRT,  sAvgs.avgRT);
 
-  const overallWTWinner  = sAvgs.avgWT  <= pAvgs.avgWT  ? 'SRTF' : 'Priority Scheduling';
-  const overallRTWinner  = pAvgs.avgRT  <= sAvgs.avgRT  ? 'Priority Scheduling' : 'SRTF';
+  const overallWTWinner = sAvgs.avgWT  <= pAvgs.avgWT  ? 'SRTF' : 'Priority Scheduling';
+  const overallRTWinner = pAvgs.avgRT  <= sAvgs.avgRT  ? 'Priority Scheduling' : 'SRTF';
 
   document.getElementById('conclusionArea').innerHTML = `
     <div class="conclusion-box">
@@ -623,38 +623,28 @@ function runSimulation() {
   }
   showError('');
 
-  /* ── Step 1: Run both algorithms (from logic.js) ── */
   const pResult = runPriority(processes);
   const sResult = runSRTF(processes);
 
-  /* ── Step 2: Compute per-process metrics (from logic.js) ── */
   const pMetrics = computeMetrics(processes, pResult.ct, pResult.started);
   const sMetrics = computeMetrics(processes, sResult.ct, sResult.started);
 
-  /* ── Step 3: Render Gantt charts ── */
   renderGantt(pResult.gantt, 'ganttPriority');
   renderGantt(sResult.gantt, 'ganttSRTF');
 
-  /* ── Step 4: Render results tables & collect averages ── */
   const pAvgs = renderResultsTable(pMetrics, 'tablePriority');
   const sAvgs = renderResultsTable(sMetrics, 'tableSRTF');
 
-  /* ── Step 5: Render metric summary cards ── */
   renderMetricCards(pAvgs, 'metricsPriority', 'cyan');
   renderMetricCards(sAvgs, 'metricsSRTF',     'amber');
 
-  /* ── Step 6: Render comparison table ── */
   renderComparison(pAvgs, sAvgs);
-
-  /* ── Step 7: Render auto-generated conclusion ── */
   renderConclusion(pAvgs, sAvgs);
 
-  /* ── Step 8: Show results and scroll to them ── */
   const resultsSection = document.getElementById('resultsSection');
   resultsSection.style.display = 'block';
   resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-  /* ── Step 9: Mark all progress steps as done ── */
   ['step1','step2','step3','step4','step5'].forEach(id => {
     const el = document.getElementById(id);
     el.classList.remove('active');
@@ -681,7 +671,7 @@ function demoError(type) {
   const el = document.getElementById('demoErrorMsg');
   el.textContent = '⚠ Validation Error: ' + DEMO_ERRORS[type];
   el.classList.remove('show');
-  void el.offsetWidth;               /* force reflow so animation replays */
+  void el.offsetWidth;
   el.classList.add('show');
   el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
@@ -692,13 +682,11 @@ function demoError(type) {
 ─────────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
 
-  /* Allow pressing Enter in any input field to trigger addProcess() */
   ['inPid', 'inAt', 'inBt', 'inPri'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
       if (e.key === 'Enter') addProcess();
     });
   });
 
-  /* Initial UI state */
   updateStatusBar();
 });
