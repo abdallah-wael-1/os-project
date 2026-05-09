@@ -5,13 +5,15 @@
 
 ## Team Members
 
-| 1 | Abdullah Wael | [20240589] |
-| 2 | Marwan Ahmed | [20240918] |
-| 3 | Philopater Elia  | [20240697] |
-| 4 | Dina Sayed | [20240341] |
-| 5 | Shahd Khaled | [20240485] |
-| 6 | Esraa Nasser | [20240128] |
-| 7 | Aya Aboelhamd | [ID] |
+| # | Name | Student ID |
+|---|------|------------|
+| 1 | Abdullah Wael | 20240589 |
+| 2 | Marwan Ahmed | 20240918 |
+| 3 | Philopater Elia | 20240697 |
+| 4 | Dina Sayed | 20240341 |
+| 5 | Shahd Khaled | 20240485 |
+| 6 | Esraa Nasser | 20240128 |
+| 7 | Aya Aboelhamd | [20240183] |
 
 ---
 
@@ -178,15 +180,15 @@ All errors are displayed inline with a shake animation. The simulation will not 
 |-----------|--------|
 | Input panel with add/remove/clear 
 | Process table before simulation 
-| Gantt chart — Priority (separate) 
+| Gantt chart — Priority (separate)
 | Gantt chart — SRTF (separate) 
 | Results table — Priority (WT, TAT, RT + averages) 
 | Results table — SRTF (WT, TAT, RT + averages) 
 | Comparison summary (same workload, both algorithms) 
 | Auto-generated conclusion and analysis 
 | Input validation with clear error messages 
-| Scenarios A, B, C quick-load
-| Scenario D validation demo 
-| Convention documented (lower number = higher priority) | ✅ |
-| Tie-breaking rule documented and applied | ✅ |
-| Starvation risk discussed in conclusion | ✅ |
+| Scenarios A, B, C quick-load 
+| Scenario D validation demo
+| Convention documented (lower number = higher priority)
+| Tie-breaking rule documented and applied 
+| Starvation risk discussed in conclusion 
