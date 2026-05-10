@@ -8,6 +8,61 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./css/style.css">
+
+  <style>
+    /* Scenario tooltip styles */
+    .scenario-btn-wrap {
+      position: relative;
+      display: inline-block;
+    }
+
+    .scenario-btn-wrap .scenario-tooltip {
+      visibility: hidden;
+      opacity: 0;
+      position: absolute;
+      bottom: calc(100% + 10px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--surface2, #1e2030);
+      border: 1px solid var(--border, #2a2d3e);
+      border-radius: 8px;
+      padding: 10px 13px;
+      width: 220px;
+      font-size: 12px;
+      line-height: 1.55;
+      color: var(--text2, #a0a8c0);
+      white-space: normal;
+      pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+    }
+
+    .scenario-btn-wrap .scenario-tooltip .tip-title {
+      font-weight: 600;
+      font-size: 11px;
+      color: var(--text1, #e0e4f0);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Arrow */
+    .scenario-btn-wrap .scenario-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--border, #2a2d3e);
+    }
+
+    .scenario-btn-wrap:hover .scenario-tooltip {
+      visibility: visible;
+      opacity: 1;
+    }
+  </style>
 </head>
 <body>
 
@@ -83,7 +138,7 @@
 
   <main class="content">
 
-    <!-- ══ SECTION 1 — INPUT ══ -->
+    <!-- SECTION 1 — INPUT -->
     <section class="panel" id="secInput">
       <div class="panel-head">
         <div class="panel-head-left">
@@ -95,9 +150,31 @@
         </div>
         <div class="panel-head-right">
           <span class="btn-label">Quick scenarios:</span>
-          <button class="btn btn-ghost" onclick="loadScenario('A')">Scenario A</button>
-          <button class="btn btn-ghost" onclick="loadScenario('B')">Scenario B</button>
-          <button class="btn btn-ghost" onclick="loadScenario('C')">Scenario C</button>
+
+          <div class="scenario-btn-wrap">
+            <button class="btn btn-ghost" onclick="loadScenario('A')">Scenario A</button>
+            <div class="scenario-tooltip">
+              <div class="tip-title">Basic Mixed Workload</div>
+              4 processes with different arrival times and burst times. Verifies that both algorithms run correctly on a typical workload.
+            </div>
+          </div>
+
+          <div class="scenario-btn-wrap">
+            <button class="btn btn-ghost" onclick="loadScenario('B')">Scenario B</button>
+            <div class="scenario-tooltip">
+              <div class="tip-title">Priority vs Burst Conflict</div>
+              High-priority long process vs low-priority short ones. Priority keeps P1 running; SRTF preempts it immediately.
+            </div>
+          </div>
+
+          <div class="scenario-btn-wrap">
+            <button class="btn btn-ghost" onclick="loadScenario('C')">Scenario C</button>
+            <div class="scenario-tooltip">
+              <div class="tip-title">Starvation Risk</div>
+              P4 has the lowest priority and longest burst. It waits the longest under both algorithms — demonstrating starvation risk.
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -189,7 +266,7 @@
       </div>
     </section>
 
-    <!-- ══ RESULTS (hidden until run) ══ -->
+    <!-- RESULTS (hidden until run) -->
     <div id="resultsSection" style="display:none">
 
       <!-- SECTION 2 — GANTT -->
@@ -286,9 +363,9 @@
         <div class="panel-body" id="conclusionArea"></div>
       </section>
 
-    </div><!-- /resultsSection -->
+    </div>
 
-    <!-- ══ VALIDATION DEMO ══ -->
+    <!-- VALIDATION DEMO -->
     <section class="panel" id="secValidation">
       <div class="panel-head">
         <div class="panel-head-left">

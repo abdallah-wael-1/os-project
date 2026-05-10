@@ -1,98 +1,44 @@
-/* ═══════════════════════════════════════════════════════════════════
-   script.js — UI Layer
-   ───────────────────────────────────────────────────────────────────
-   THIS FILE:
-     • Handles all DOM interaction, rendering, validation, and events.
-     • Calls functions from logic.js — never implements algorithms here.
-     • Structured in clearly separated blocks (search the ─── markers).
-
-   DEPENDS ON:
-     • logic.js loaded BEFORE this file  (see index.html script order)
-     • DOM elements defined in index.html
-
-   BLOCKS IN THIS FILE:
-     1. Constants & State
-     2. Preset Scenarios
-     3. Color Assignment
-     4. Validation
-     5. Add / Remove / Clear Processes
-     6. Render Process Table
-     7. Status Bar Update
-     8. Gantt Chart Rendering
-     9. Results Table Rendering
-    10. Metric Cards Rendering
-    11. Comparison Table Rendering
-    12. Conclusion Rendering
-    13. Run Simulation (main orchestrator)
-    14. Validation Demo (Scenario D)
-    15. Event Listeners & Init
-══════════════════════════════════════════════════════════════════ */
-
-
-/* ───────────────────────────────────────────────────────────────────
-   1. CONSTANTS & STATE
-─────────────────────────────────────────────────────────────────── */
-
-/* Global list of process objects. Each: { pid, at, bt, pri } */
 let processes = [];
-
-/* Maps pid → color index (assigned round-robin) */
 let colorMap = {};
 
-/* CSS class names for PID badges and Gantt bars */
 const COLORS = ['p-c0','p-c1','p-c2','p-c3','p-c4','p-c5','p-c6','p-c7'];
 
-/* Solid hex values matching the CSS classes above — used for Gantt bar backgrounds */
 const COLOR_HEX = [
-  '#00d4c8', /* cyan   */
-  '#f5a623', /* amber  */
-  '#3dd68c', /* green  */
-  '#a78bfa', /* purple */
-  '#f472b6', /* pink   */
-  '#fbbf24', /* yellow */
-  '#34d399', /* teal   */
-  '#6366f1', /* indigo */
+  '#00d4c8',
+  '#f5a623',
+  '#3dd68c',
+  '#a78bfa',
+  '#f472b6',
+  '#fbbf24',
+  '#34d399',
+  '#6366f1',
 ];
 
-/* Width in pixels for each 1-unit time slot in Gantt charts */
 const PX_PER_UNIT = 36;
 
 
-/* ───────────────────────────────────────────────────────────────────
-   2. PRESET SCENARIOS
-   These match the required test cases from the project rubric.
-─────────────────────────────────────────────────────────────────── */
 const SCENARIOS = {
-  /* Scenario A: basic mixed workload — different arrival + burst times */
   A: [
     { pid: 'P1', at: 0, bt: 8, pri: 3 },
     { pid: 'P2', at: 1, bt: 4, pri: 1 },
     { pid: 'P3', at: 2, bt: 9, pri: 4 },
     { pid: 'P4', at: 3, bt: 5, pri: 2 },
   ],
-  /* Scenario B: conflict — high-priority long process vs low-priority short processes
-     Priority: P1 runs almost uninterrupted (priority label wins)
-     SRTF:     P2 and P3 preempt P1 immediately (shorter burst wins) */
   B: [
-    { pid: 'P1', at: 0, bt: 15, pri: 1 },  /* highest priority, long burst  */
-    { pid: 'P2', at: 1, bt: 2,  pri: 5 },  /* lowest priority,  short burst */
-    { pid: 'P3', at: 2, bt: 3,  pri: 5 },  /* lowest priority,  short burst */
+    { pid: 'P1', at: 0, bt: 15, pri: 1 },
+    { pid: 'P2', at: 1, bt: 2,  pri: 5 },
+    { pid: 'P3', at: 2, bt: 3,  pri: 5 },
   ],
-  /* Scenario C: starvation risk — P4 has very low priority and long burst */
   C: [
     { pid: 'P1', at: 0, bt: 10, pri: 1 },
     { pid: 'P2', at: 0, bt: 5,  pri: 2 },
     { pid: 'P3', at: 0, bt: 3,  pri: 3 },
-    { pid: 'P4', at: 0, bt: 8,  pri: 5 },  /* starvation candidate */
+    { pid: 'P4', at: 0, bt: 8,  pri: 5 },
   ],
 };
 
-/**
- * Load a preset scenario into the process list.
- * Clears any current processes first.
- */
 function loadScenario(key) {
-  processes = SCENARIOS[key].map(p => ({ ...p })); /* shallow copy each process */
+  processes = SCENARIOS[key].map(p => ({ ...p }));
   assignColors();
   renderProcessTable();
   document.getElementById('resultsSection').style.display = 'none';
@@ -101,10 +47,6 @@ function loadScenario(key) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   3. COLOR ASSIGNMENT
-   Assigns a color index to each PID, cycling through COLORS array.
-─────────────────────────────────────────────────────────────────── */
 function assignColors() {
   colorMap = {};
   processes.forEach((p, i) => {
@@ -113,39 +55,19 @@ function assignColors() {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   4. VALIDATION
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * Validates a single process entry before adding it to the list.
- * Returns an error string, or null if valid.
- *
- * Rules:
- *   - All fields must be filled
- *   - PID: alphanumeric + hyphen/underscore only
- *   - Arrival Time: number ≥ 0
- *   - Burst Time: number > 0
- *   - Priority: integer 1–99
- *   - No duplicate PIDs
- */
 function validateInput(pid, at, bt, pri) {
-  /* Empty check */
   if (!pid || at === '' || bt === '' || pri === '') {
     return 'Please fill all fields (PID, Arrival Time, Burst Time, Priority)';
   }
 
-  /* PID format */
   if (!/^[A-Za-z0-9_-]+$/.test(pid)) {
     return 'Invalid PID: use letters, numbers, hyphens, or underscores only';
   }
 
-  /* Numeric format checks */
   if (!/^-?\d+(\.\d+)?$/.test(at))  return 'Invalid Arrival Time — must be a number';
   if (!/^-?\d+(\.\d+)?$/.test(bt))  return 'Invalid Burst Time — must be a number';
   if (!/^\d+$/.test(pri))           return 'Invalid Priority — must be a whole number';
 
-  /* Range checks */
   const atN  = parseFloat(at);
   const btN  = parseFloat(bt);
   const priN = parseInt(pri, 10);
@@ -154,19 +76,13 @@ function validateInput(pid, at, bt, pri) {
   if (btN <= 0)            return 'Burst Time must be greater than zero';
   if (priN < 1 || priN > 99) return 'Priority must be between 1 and 99 (1 = highest)';
 
-  /* Duplicate PID */
   if (processes.some(p => p.pid === pid)) {
     return `Duplicate Process ID: "${pid}" already exists in the process list`;
   }
 
-  return null; /* no error */
+  return null;
 }
 
-/**
- * Show or hide an error message element.
- * @param {string} msg   - empty string to hide
- * @param {string} elId  - ID of the .error-msg element
- */
 function showError(msg, elId = 'errorMsg') {
   const el = document.getElementById(elId);
   el.textContent = msg;
@@ -178,14 +94,6 @@ function showError(msg, elId = 'errorMsg') {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   5. ADD / REMOVE / CLEAR PROCESSES
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * Read the form fields, validate, and push a new process to the list.
- * Called by the "+ Add" button and Enter key handler.
- */
 function addProcess() {
   const pid = document.getElementById('inPid').value.trim().toUpperCase();
   const at  = document.getElementById('inAt').value.trim();
@@ -204,7 +112,6 @@ function addProcess() {
   assignColors();
   renderProcessTable();
 
-  /* Clear inputs and return focus to PID field */
   document.getElementById('inPid').value = '';
   document.getElementById('inAt').value  = '';
   document.getElementById('inBt').value  = '';
@@ -214,10 +121,6 @@ function addProcess() {
   updateStatusBar();
 }
 
-/**
- * Remove a process by its index in the processes array.
- * Called by the ✕ button in each table row.
- */
 function removeProcess(idx) {
   processes.splice(idx, 1);
   assignColors();
@@ -225,9 +128,6 @@ function removeProcess(idx) {
   updateStatusBar();
 }
 
-/**
- * Wipe the entire process list and reset the UI.
- */
 function clearAll() {
   processes = [];
   colorMap  = {};
@@ -238,10 +138,6 @@ function clearAll() {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   6. RENDER PROCESS TABLE
-   Rebuilds the tbody of the input-section process table.
-─────────────────────────────────────────────────────────────────── */
 function renderProcessTable() {
   const tbody = document.getElementById('procTableBody');
   document.getElementById('procCount').textContent =
@@ -278,10 +174,6 @@ function renderProcessTable() {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   7. STATUS BAR UPDATE
-   Updates the colored dot and text at the bottom of the input section.
-─────────────────────────────────────────────────────────────────── */
 function updateStatusBar() {
   const dot    = document.getElementById('inputStatusDot');
   const status = document.getElementById('inputStatus');
@@ -299,23 +191,12 @@ function updateStatusBar() {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   8. GANTT CHART RENDERING
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * Compress the raw gantt array (one entry per time unit) into
- * contiguous segments for display.
- *
- * Input:  [{ t:0, pid:'P1' }, { t:1, pid:'P1' }, { t:2, pid:'P2' }]
- * Output: [{ pid:'P1', start:0, end:2 }, { pid:'P2', start:2, end:3 }]
- */
 function compressGantt(gantt) {
   const segments = [];
   gantt.forEach(g => {
     const last = segments[segments.length - 1];
     if (last && last.pid === g.pid) {
-      last.end = g.t + 1;  /* extend current segment */
+      last.end = g.t + 1;
     } else {
       segments.push({ pid: g.pid, start: g.t, end: g.t + 1 });
     }
@@ -323,18 +204,11 @@ function compressGantt(gantt) {
   return segments;
 }
 
-/**
- * Build and inject the Gantt chart HTML into the given container element.
- *
- * @param {Array}  gantt       - raw gantt array from runPriority / runSRTF
- * @param {string} containerId - id of the .gantt-container div in index.html
- */
 function renderGantt(gantt, containerId) {
   const segments  = compressGantt(gantt);
   const totalTime = segments.length ? segments[segments.length - 1].end : 0;
   const container = document.getElementById(containerId);
 
-  /* ── Bars row ── */
   let barsHtml = '';
   segments.forEach(seg => {
     const width = (seg.end - seg.start) * PX_PER_UNIT;
@@ -351,7 +225,6 @@ function renderGantt(gantt, containerId) {
     barsHtml += `<div class="${cls}" style="${barStyle}" title="${title}">${seg.pid}</div>`;
   });
 
-  /* ── Time markers row ── */
   let timesHtml = '';
   for (let t = 0; t <= totalTime; t++) {
     timesHtml += `<div class="gantt-time-mark" style="width:${PX_PER_UNIT}px">${t}</div>`;
@@ -364,20 +237,8 @@ function renderGantt(gantt, containerId) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   9. RESULTS TABLE RENDERING
-   Builds the per-process metrics table and returns averages.
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * Render the results table for one algorithm.
- *
- * @param {Array}  metrics  - output of computeMetrics() from logic.js
- * @param {string} tableId  - id of the <table> element to populate
- * @returns {{ avgWT, avgTAT, avgRT }}
- */
 function renderResultsTable(metrics, tableId) {
-  const avgs = computeAverages(metrics); /* from logic.js */
+  const avgs = computeAverages(metrics);
 
   const headerHtml = `
     <thead>
@@ -408,7 +269,6 @@ function renderResultsTable(metrics, tableId) {
       </tr>`;
   }).join('');
 
-  /* Average row — highlighted by CSS (.results-table tr:last-child) */
   const avgRowHtml = `
     <tr>
       <td colspan="5" style="text-align:right; font-size:11px; color:var(--text3)">
@@ -426,16 +286,6 @@ function renderResultsTable(metrics, tableId) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   10. METRIC CARDS RENDERING
-   Four summary cards above each results table.
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * @param {{ avgWT, avgTAT, avgRT }} avgs
- * @param {string} containerId  - id of the .grid4 div
- * @param {string} theme        - 'cyan' (Priority) or 'amber' (SRTF)
- */
 function renderMetricCards(avgs, containerId, theme) {
   const c1 = theme === 'cyan' ? 'cyan'   : 'amber';
   const c2 = theme === 'cyan' ? 'amber'  : 'purple';
@@ -461,14 +311,6 @@ function renderMetricCards(avgs, containerId, theme) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   11. COMPARISON TABLE RENDERING
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * Build the winner badge HTML for a metric comparison.
- * lowerIsBetter = true for WT, TAT, RT.
- */
 function _winnerBadge(pVal, sVal, lowerIsBetter = true) {
   if (pVal === sVal) {
     return '<span class="winner-badge" style="background:var(--surface);color:var(--text3)">Tie</span>';
@@ -480,10 +322,6 @@ function _winnerBadge(pVal, sVal, lowerIsBetter = true) {
   return '<span class="winner-badge" style="background:var(--amber-dim);color:var(--amber)">SRTF</span>';
 }
 
-/**
- * @param {{ avgWT, avgTAT, avgRT }} pAvgs  - Priority averages
- * @param {{ avgWT, avgTAT, avgRT }} sAvgs  - SRTF averages
- */
 function renderComparison(pAvgs, sAvgs) {
   document.getElementById('comparisonArea').innerHTML = `
     <table class="compare-table">
@@ -543,15 +381,6 @@ function renderComparison(pAvgs, sAvgs) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   12. CONCLUSION RENDERING
-   Auto-generated analysis based on actual simulation results.
-─────────────────────────────────────────────────────────────────── */
-
-/**
- * @param {{ avgWT, avgTAT, avgRT }} pAvgs
- * @param {{ avgWT, avgTAT, avgRT }} sAvgs
- */
 function renderConclusion(pAvgs, sAvgs) {
   function winner(pVal, sVal) {
     if (pVal < sVal) return 'Priority Scheduling';
@@ -611,11 +440,6 @@ function renderConclusion(pAvgs, sAvgs) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   13. RUN SIMULATION  (main orchestrator)
-   Called by the "▶ Run Simulation" button.
-   Calls logic.js functions → then calls render functions above.
-─────────────────────────────────────────────────────────────────── */
 function runSimulation() {
   if (processes.length < 2) {
     showError('Enter at least 2 processes before running the simulation');
@@ -653,10 +477,6 @@ function runSimulation() {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   14. VALIDATION DEMO  (Scenario D)
-   Shows specific error messages without touching the main form.
-─────────────────────────────────────────────────────────────────── */
 const DEMO_ERRORS = {
   neg_at:    'Arrival Time cannot be negative — entered: AT = -1',
   zero_bt:   'Burst Time must be greater than zero — entered: BT = 0',
@@ -677,11 +497,7 @@ function demoError(type) {
 }
 
 
-/* ───────────────────────────────────────────────────────────────────
-   15. EVENT LISTENERS & INIT
-─────────────────────────────────────────────────────────────────── */
 document.addEventListener('DOMContentLoaded', () => {
-
   ['inPid', 'inAt', 'inBt', 'inPri'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
       if (e.key === 'Enter') addProcess();
