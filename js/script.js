@@ -497,6 +497,30 @@ function demoError(type) {
 }
 
 
+function showTip(e) {
+  const btn = e.currentTarget;
+  const tip = document.getElementById('scenarioTooltip');
+  document.getElementById('tipTitle').textContent = btn.dataset.tipTitle;
+  document.getElementById('tipBody').textContent  = btn.dataset.tipBody;
+
+  tip.style.display = 'block';
+
+  const rect = btn.getBoundingClientRect();
+  const tipW = 220;
+  let left = rect.left + rect.width / 2 - tipW / 2;
+  let top  = rect.top - tip.offsetHeight - 10 + window.scrollY;
+
+  if (left < 8) left = 8;
+  if (left + tipW > window.innerWidth - 8) left = window.innerWidth - tipW - 8;
+
+  tip.style.left = left + 'px';
+  tip.style.top  = top + 'px';
+}
+
+function hideTip() {
+  document.getElementById('scenarioTooltip').style.display = 'none';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   ['inPid', 'inAt', 'inBt', 'inPri'].forEach(id => {
     document.getElementById(id).addEventListener('keydown', e => {
