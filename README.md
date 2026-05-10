@@ -144,7 +144,10 @@ A high-priority process with a long burst competes against low-priority short pr
 | P3  | 2       | 3     | 5 ← lowest priority  |
 
 **Priority:** P1 runs almost uninterrupted — its priority label wins every contest.  
-**SRTF:** P2 and P3 preempt P1 immediately — their shorter burst times win instead.
+**SRTF:** P2 and P3 preempt P1 immediately — their shorter burst times win instead.\
+
+<img width="1055" height="762" alt="Screenshot 2026-05-10 054514" src="https://github.com/user-attachments/assets/e39e2f6f-4252-418e-813c-7f6a47875540" />
+
 
 ### Scenario C — Starvation Risk
 
@@ -154,6 +157,10 @@ A high-priority process with a long burst competes against low-priority short pr
 | P2  | 0       | 5     | 2        |
 | P3  | 0       | 3     | 3        |
 | P4  | 0       | 8     | 5 ← starvation risk |
+
+<img width="1042" height="797" alt="Screenshot 2026-05-10 054700" src="https://github.com/user-attachments/assets/b9edb724-37ff-469e-a72d-a1314ffdefc6" />
+
+
 
 ### Scenario D — Validation Demo
 
@@ -166,6 +173,9 @@ Demonstrates all error cases via interactive buttons in the UI:
 - Missing required fields
 - Priority value out of range (must be 1–99)
 - Running simulation with fewer than 2 processes
+
+<img width="1018" height="200" alt="Screenshot 2026-05-10 055023" src="https://github.com/user-attachments/assets/fabe0fb5-a58c-460c-894b-763c8320ddc0" />
+
 
 ---
 
