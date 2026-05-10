@@ -125,7 +125,15 @@ Averages are computed as the sum of each metric across all processes divided by 
 | P3  | 2       | 9     | 4        |
 | P4  | 3       | 5     | 2        |
 
+
+**Priority:** P2 runs first (highest priority), then P4, then P1, then P3.  
+**SRTF:** P2 preempts P1 on arrival (shorter burst), then P4 preempts on arrival.
+
+![Scenario A — Gantt & Results](https://github.com/user-attachments/assets/ef092501-fc4c-4e2c-98e5-52f95a34c4e9)
+
+
 ### Scenario B — Priority vs Burst Conflict
+
 
 A high-priority process with a long burst competes against low-priority short processes.
 
