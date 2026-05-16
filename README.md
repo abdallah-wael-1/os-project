@@ -7,13 +7,13 @@
 
 | # | Name | Student ID |
 |---|------|------------|
-| 1 | Abdullah Wael | 20240589 |
-| 2 | Marwan Ahmed | 20240918 |
-| 3 | Philopater Elia | 20240697 |
-| 4 | Dina Sayed | 20240341 |
-| 5 | Shahd Khaled | 20240485 |
-| 6 | Esraa Nasser | 20240128 |
-| 7 | Aya Aboelhamd | [20240183] |
+| 1 | عبدالله وائل محمد | 20240589 |
+| 2 | مروان احمد عيد حمزة | 20240918 |
+| 3 | فيلوباتير إيليا جرجس صموئيل | 20240697 |
+| 4 | دينا سيد محمد محمد | 20240341 |
+| 5 | آية ابو الحمد سالم جادالله | 20240183 |
+| 6 | شهد خالد فتحي سيد | 20240485 |
+| 7 | إسراء ناصر مصطفى عبدالواحد | 20240128 |
 
 ---
 
@@ -196,17 +196,17 @@ All errors are displayed inline with a shake animation. The simulation will not 
 
 | Criterion | Status |
 |-----------|--------|
-| Input panel with add/remove/clear 
-| Process table before simulation 
-| Gantt chart — Priority (separate)
-| Gantt chart — SRTF (separate) 
-| Results table — Priority (WT, TAT, RT + averages) 
-| Results table — SRTF (WT, TAT, RT + averages) 
-| Comparison summary (same workload, both algorithms) 
-| Auto-generated conclusion and analysis 
-| Input validation with clear error messages 
-| Scenarios A, B, C quick-load 
-| Scenario D validation demo
-| Convention documented (lower number = higher priority)
-| Tie-breaking rule documented and applied 
-| Starvation risk discussed in conclusion 
+| Input panel with add/remove/clear | Done |
+| Process table before simulation | Done |
+| Gantt chart — Priority (separate) | Done |
+| Gantt chart — SRTF (separate) | Done |
+| Results table — Priority (WT, TAT, RT + averages) | Done |
+| Results table — SRTF (WT, TAT, RT + averages) | Done |
+| Comparison summary (same workload, both algorithms) | Done |
+| Auto-generated conclusion and analysis | Done |
+| Input validation with clear error messages | Done |
+| Scenarios A, B, C quick-load | Done |
+| Scenario D validation demo | Done |
+| Convention documented (lower number = higher priority) | Done |
+| Tie-breaking rule documented and applied | Done |
+| Starvation risk discussed in conclusion | Done |
